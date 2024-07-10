@@ -1,0 +1,32 @@
+1. Use least squares to fit a line to the data
+2. Calculate R^2
+3. Calculate a P value for R^2
+
+
+1. Draw a random line through the data
+2. Measure distance from the line to the data (calculate residuals),
+square each distance and add them up
+4. plot the rotation vs sum of squared residuals
+on a separate graph
+3. repeat
+4. find the rotation that has the least sum of
+squares (residuals)
+5. Get the formula for the line
+
+
+Calculating R^2
+1. Find average value of y axis values (what were predicting)
+2. Sum the squared residuals (distance from each y value from the average y value)
+( also called SS(mean))
+SS(mean) = (data-mean)^2
+variation around the mean = (data-mean)^2 / n
+3. Go back to original plot with best fit line
+and calculate SS(fit), for the sum of squares
+around the least squares fit
+SS(fit) - (data - line)^2
+var(fit) = SS(fit) / n
+variance(something) = sum of squares / n = average sum of squares
+R^2 tells us how much of the variation of a y label
+can be explained by taking an x feature into account
+R^2 = (var(mean) - var(fit)) / var(mean)
+can also use (SS(mean) - SS(fit)) / SS(mean)
