@@ -38,8 +38,8 @@ class LinearRegression:
         h = 1e-5
         # Our model is currently not optimized
         optimized = False
-        plt.ion()
-        fig = plt.figure()
+        # plt.ion()
+        # fig = plt.figure()
         #ax = fig.add_subplot(111, projection='3d')
         # While its not optimized, run gradient descent
         while not optimized:
@@ -91,9 +91,9 @@ class LinearRegression:
             # plt.pause(0.1)
 
             # If both of these partial derivatives are less than 0.1, we have completed gradient descent
-            if all(abs(pd) < 0.1 for pd in partial_derivatives):
+            if all(abs(pd) < 0.01 for pd in partial_derivatives):
                 optimized = True
-                #print(f"partial derivatives: {partial_derivatives}")
+                print(f"partial derivatives: {partial_derivatives}")
                 
         
     # Get our new predictions array by inputting our previous x data into our now optimized model (the line of best fit)
@@ -125,28 +125,26 @@ class LinearRegression:
         
 
 
-example_dataset_1 = [
-    [0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2], #x_features
-    [1.2, 1.0, 2.0, 4.0, 3.5, 6.0, 4.7, 4.4, 7.0], #z_features
+
+data1 = [[0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2],[1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0]]
+data2 = [
+    [0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2],
+    [1.2, 1.0, 2.0, 4.0, 3.5, 6.0, 4.7, 4.4, 7.0], #x_features
     [1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0], #y_labels
 ]
-example_dataset_2 = [
-    [0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2], #x_features
-    [1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0], #y_labels
-]
 
 
 
-x_features = np.array(example_dataset_2[0:-1])
-y_label = np.array(example_dataset_2[-1])
+x_features = np.array(data2[0:-1])
+y_label = np.array(data2[-1])
 
 model = LinearRegression()
 start = datetime.datetime.now()
 model.fit(x_features, y_label)
-print(f"parameters {model.params}")
+#print(f"parameters {model.params}")
 end = datetime.datetime.now()
-print(f"time elapsed: {end - start}")
-print(model.predict(x_features))
+#print(f"time elapsed: {end - start}")
+#print(model.predict(x_features))
 model.plot()
 
 
