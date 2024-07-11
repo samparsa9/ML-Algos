@@ -26,8 +26,8 @@ class LinearRegression:
 
     # This is our cost function, which we have chosen to be Mean Squarred Error (Sum of Squarred Error leads to exploding gradients)
     def loss_function(self, x, y, w, b):
-        y_hat = self.f(x, w, b) # y_hat are our models predictions, it produces our y values to plot our line of best fit
-        return np.mean((y - y_hat) ** 2) # Returining the MSE for these current parameters
+        y_hat = self.f(x, w, b) # y_hat is a list of our models predictions; produces our y values to plot our line of best fit
+        return np.mean((y - y_hat) ** 2) # Returning the MSE for these current parameters
 
 
     # While either of our partial derivatives are greater than 0.1, keep running gradient descent
@@ -39,18 +39,18 @@ class LinearRegression:
         h = 1e-5
         # Our model is currently not optimized
         optimized = False
-        # plt.ion()
-        # fig, ax = plt.subplots()
+        plt.ion()
+        fig, ax = plt.subplots()
         # While its not optimized, run gradient descent
         while not optimized:
             # The formula for the partial derivative of our MSE loss function with respect to our first parameter, w, 
             # representing the slope, can be seen as follows
             dw = (self.loss_function(x,y,self.w+h,self.b) - self.loss_function(self.x,self.y, self.w-h, self.b)) / (2*h)
-            print(f"New dw: {dw}")
+            #print(f"New dw: {dw}")
             # The formula for the partial derivative of our MSE loss function with respect to our second parameter, b, 
             # representing the intercept, can be seen as follows
             db = (self.loss_function(x,y,self.w,self.b+h ) - self.loss_function(x,y,self.w, self.b-h)) / (2*h)
-            print(f"New db: {db}")
+            #print(f"New db: {db}")
             # Using our learning rate, we will add a tiny bit to our slope in the oppsite signed direction of our partial derivative
             # little_w_to_add = 0
             # if dw > dw/100: little_w_to_add += dw/100
@@ -63,14 +63,17 @@ class LinearRegression:
             self.w = temp_w
             # And the entire class' b parameter
             self.b = temp_b
-            # print(f"new b: {self.b}")
-            # self.predictions = self.f(x, self.w, self.b)
-            # ax.cla()  # Clear the previous plot
-            # ax.plot(self.x, self.y, 'o', label="Data Points")
-            # ax.plot(self.x, self.predictions, label="Fitted Line")
-            # ax.legend()
-            # plt.draw()  # Update the plot
-            # plt.pause(0.05)  # Pause for a short interval to allow the plot to update
+            
+            self.predictions = self.f(x, self.w, self.b)
+
+            # Visualization of Algorithm
+            ax.cla()  # Clear the previous plot
+            ax.plot(self.x, self.y, 'o', label="Data Points")
+            ax.plot(self.x, self.predictions, label="Fitted Line")
+            ax.legend()
+            plt.draw()  # Update the plot
+            plt.pause(0.05)  # Pause for a short interval to allow the plot to update
+
             # If both of these partial derivatives are less than 0.1, we have completed gradient descent
             if abs(dw) < 0.1 and abs(db) < 0.1:
                 # Our model is now optimized
@@ -89,15 +92,14 @@ class LinearRegression:
         plt.show()
 
 
-data = [[0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2],[1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0]]
+example_dataset_1 = [[0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2],[1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0]]
 #y = np.array([1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0])
 #y = 2 * x + np.random.normal(0, 1, 100)
 
-data = np.array(data)
+data = np.array(example_dataset_1)
 model = LinearRegression()
 model.fit(data[0], data[1])
-print(model.predict(data[0]))
-
+#print(model.predict(data[0]))
 
 
     
