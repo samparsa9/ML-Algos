@@ -38,9 +38,9 @@ class LinearRegression:
         h = 1e-5
         # Our model is currently not optimized
         optimized = False
-        # plt.ion()
-        # fig = plt.figure()
-        #ax = fig.add_subplot(111, projection='3d')
+        plt.ion()
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection='3d')
         # While its not optimized, run gradient descent
         while not optimized:
             partial_derivatives = []
@@ -54,6 +54,7 @@ class LinearRegression:
                 partial_derivatives.append(dparam)
                 temp_params.append(self.params[i] - ((self.learning_rate * dparam)))
                 self.params[i] = temp_params[i]
+                print(f"Derivative: {self.params[i]}")
             # The formula for the partial derivative of our MSE loss function with respect to our first parameter, w, 
             # representing the slope, can be seen as follows
             #dw = (self.loss_function(features_matrix,y_labels,self.w+h,self.n,self.b) - self.loss_function(features_matrix,y_labels,self.w-h,self.n,self.b)) / (2*h)
@@ -80,15 +81,15 @@ class LinearRegression:
             
             self.y_preds = self.f(self.features_matrix, self.params, self.b)
 
-            # # Visualization of Algorithm
-            # ax.cla()
-            # ax.scatter(self.features_matrix, self.y_labels, color='red', label='Actual')
-            # ax.plot_trisurf(self.features_matrix, self.y_preds, color='blue', alpha=0.5, label='Predicted')
-            # ax.set_xlabel('X')
-            # ax.set_ylabel('Z')
-            # ax.set_zlabel('Y')
-            # plt.draw()
-            # plt.pause(0.1)
+            # Visualization of Algorithm
+            ax.cla()
+            ax.scatter(self.features_matrix[0],self.features_matrix[1], self.y_labels, color='red', label='Actual')
+            ax.plot_trisurf(self.features_matrix[0], self.features_matrix[1], self.y_preds, color='blue', alpha=0.5, label='Predicted')
+            ax.set_xlabel('X')
+            ax.set_ylabel('Z')
+            ax.set_zlabel('Y')
+            plt.draw()
+            plt.pause(0.1)
 
             # If both of these partial derivatives are less than 0.1, we have completed gradient descent
             if all(abs(pd) < 0.01 for pd in partial_derivatives):
@@ -128,9 +129,15 @@ class LinearRegression:
 
 data1 = [[0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2],[1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0]]
 data2 = [
-    [0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2],
-    [1.2, 1.0, 2.0, 4.0, 3.5, 6.0, 4.7, 4.4, 7.0], #x_features
-    [1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0], #y_labels
+    [0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2, 6.5, 6.8, 7.0, 7.3, 7.6, 8.0, 8.4, 8.8, 9.0, 9.3, 9.7], # x_features
+    [1.2, 1.0, 2.0, 4.0, 3.5, 6.0, 4.7, 4.4, 7.0, 7.4, 7.8, 8.0, 8.3, 8.6, 9.0, 9.4, 9.8, 10.0, 10.3, 10.7], # z_features
+    [1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0, 6.3, 6.6, 7.0, 7.3, 7.6, 8.0, 8.3, 8.7, 9.0, 9.4, 9.8], # y_labels
+]
+
+data3 = [
+    [0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0, 8.5, 9.0, 9.5], # x_features
+    [0.7, 1.3, 1.9, 2.5, 3.1, 3.7, 4.3, 4.9, 5.5, 6.1, 6.7, 7.3, 7.9, 8.5, 9.1, 9.7], # z_features
+    [0.6, 1.2, 1.8, 2.4, 3.0, 3.6, 4.2, 4.8, 5.4, 6.0, 6.6, 7.2, 7.8, 8.4, 9.0], # y_labels
 ]
 
 
@@ -145,7 +152,7 @@ model.fit(x_features, y_label)
 end = datetime.datetime.now()
 #print(f"time elapsed: {end - start}")
 #print(model.predict(x_features))
-model.plot()
+#model.plot()
 
 
 
