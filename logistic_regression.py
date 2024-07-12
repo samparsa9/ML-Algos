@@ -34,7 +34,7 @@ class LogisticRegression:
         optimized = False
 
         plt.ion()
-        fig = plt.figure()
+        fig = plt.figure(figsize=(12,8))
         if len(self.params) == 2:
             ax1 = fig.add_subplot(211, projection='3d')
         if len(self.params) == 1:
