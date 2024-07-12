@@ -58,8 +58,8 @@ class KMeans():
             self.live_plotting(ax1)
 
         print("DONE")
-        plt.ioff()
-        plt.show()
+        # plt.ioff()
+        # plt.show()
         return self.cluster_dict
     
     def live_plotting(self, ax1):
@@ -82,23 +82,29 @@ class KMeans():
 
 
 def main():
-    data = np.array([
-    [5, 3],     # Eeach row is a datapoint, each column is a feature, since this is unsurpervised learning both the x and y
-    [1, 5],     # coordinates will be features
-    [2, 8], 
-    [3, 6],
-    [6, 2], 
-    [8, 1], 
-    [7, 3], 
-    [9, 4],
-    [7, 7], 
-    [6, 6]
-])
-    data1 = np.random.randint(1, 11, size=(30,2))
-    x_coords = np.array(data1[0])
-    y_coords = np.array(data1[-1])
+#     data = np.array([
+#     [5, 3],     # Eeach row is a datapoint, each column is a feature, since this is unsurpervised learning both the x and y
+#     [1, 5],     # coordinates will be features
+#     [2, 8], 
+#     [3, 6],
+#     [6, 2], 
+#     [8, 1], 
+#     [7, 3], 
+#     [9, 4],
+#     [7, 7], 
+#     [6, 6],
+#     [2, 5],
+#     [2, 5],
+#     [2, 5],
+#     [2, 5],
+#     [2, 5],
+#     [2, 5],
 
-    model = KMeans(num_clusters=4)
+# ])
+    data1 = np.random.randint(1, 100, size=(100,2))
+
+
+    model = KMeans(num_clusters=10)
     print(model.fit(data1))
 
     # plt.figure(figsize=(12,8))
