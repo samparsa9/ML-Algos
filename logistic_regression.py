@@ -3,39 +3,54 @@ import numpy as np
 import datetime
 from numpy import random
 
-class LinearRegression:
-    def __init__(self, learning_rate=0.02): 
-        # Initializing class variables
+class LogisticRegression:
+    #USES NATURAL LOG
+    def __init__(self, learning_rate=0.01):
         self.learning_rate = learning_rate
-        # Initializing our parameters to start off as random numbers between 1 and 10
-        self.b = random.randint(10)
+        self.b = 0
         self.params = []
-
         self.model_refresh = 0.01
-        
         self.features_matrix = None
         self.y_labels = None
-        
+        self.floating_y_preds = None
         self.y_preds = None
 
+    def f(self, features_matrix, params, b):
+        bruh = np.dot(features_matrix.T, params) + b
+        # print(features_matrix)
+        print(f"parameters are: {params}")
+        print(bruh)
+        return bruh
+    
+    def cast_to_p(self, unscaled_pred):
+        #Ln(p/1-p) = 2
+        #e^(ln(p/1-p)) = e^(2)
+        # p / (1-p) = e^(2)
+        # p = 7.4(1 - p)
+        # p = 7.4 - 7.4p
+        # 8.4p = 7.4
+        # p = 0.88
+        num_to_e = np.exp(unscaled_pred)
         
-         
-    # This function is essentially our model, which is just the equation for a line y = mx + b 
-    def f(self,features_matrix, params, b): 
-        return np.dot(features_matrix.T, params) + b #y
+        p = (num_to_e) / (num_to_e+1)
+        return p
 
-    # This is our cost function, which we have chosen to be Mean Squarred Error (Sum of Squarred Error leads to exploding gradients)
-    def loss_function(self, features_matrix, y_labels, params, b):
-        self.y_preds = self.f(features_matrix, params, b) # y_hat is a list of our models predictions; produces our y values to plot our line of best fit
-        return np.mean((y_labels - self.y_preds) ** 2) # Returning the MSE for these current parameters
+    #Log Loss function
+    #self, features_matrix, y_labels, params, b
+    def loss_function(self, features_matrix, y_labels, params, b): #y_labels will be a list of [0 or 1], 
+        self.floating_y_preds = np.array([self.cast_to_p(unscaled_p) for unscaled_p in self.f(features_matrix, params, b)])    
+        #p: value between 0 and 1 (0.5 is midline)
+        #when u plug in p, you get value between (-inf, inf), -3/3 is 95% confidence
+        return np.sum(((-1 * y_labels) * np.log(self.floating_y_preds)) - ((1-y_labels) * np.log(1-self.floating_y_preds)))
 
-
-    # While either of our partial derivatives are greater than 0.1, keep running gradient descent
     def fit(self,features_matrix, y_labels):
         # Storing the data passed in as class variables to be used later on
         self.features_matrix = features_matrix # [[features_1],[features_2], ... [y_labels]]
         self.y_labels = y_labels
         self.params = [random.randint(10) for _ in range(len(features_matrix))]
+        print("in fit function")
+        print(self.features_matrix)
+        print(self.params)
         # This is our epsilon/small value to be used in calculating our partial derivatives
         h = 1e-5
         # Our model is currently not optimized
@@ -65,7 +80,7 @@ class LinearRegression:
             self.b = self.b - ((self.learning_rate * db))
                        
             
-            self.y_preds = self.f(self.features_matrix, self.params, self.b)
+            self.y_preds = (self.f(self.features_matrix, self.params, self.b))
 
             self.live_plotting(ax)
 
@@ -73,11 +88,10 @@ class LinearRegression:
             if all(abs(pd) < 0.01 for pd in partial_derivatives):
                 optimized = True
                 print(f"partial derivatives: {partial_derivatives}")
-                
-        
-    # Get our new predictions array by inputting our previous x data into our now optimized model (the line of best fit)
+
+# Get our new predictions array by inputting our previous x data into our now optimized model (the line of best fit)
     def predict(self, features_matrix):
-        self.y_preds = self.f(features_matrix, self.params, self.b)
+        self.y_preds = np.heaviside(self.f(features_matrix, self.params, self.b), 0.5)
         return self.y_preds
     
     def plot(self):
@@ -123,34 +137,19 @@ class LinearRegression:
 
 
 def main():
-    
     data1 = [
-        [0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2],
-        [1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0],
+        [1, 2, 3, 4, 5, 6, 7, 8, 9], # Weight of a mouse in pounds
+        [0, 0, 0, 0, 1, 0, 1, 1, 1], # 0 = Not obese, 1 = Obese
     ]
-    data2 = [
-        [0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2, 6.5, 6.8, 7.0, 7.3, 7.6, 8.0, 8.4, 8.8, 9.0, 9.3, 9.7], # x_features
-        [1.2, 1.0, 2.0, 4.0, 3.5, 6.0, 4.7, 4.4, 7.0, 7.4, 7.8, 8.0, 8.3, 8.6, 9.0, 9.4, 9.8, 10.0, 10.3, 10.7], # z_features
-        [1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0, 6.3, 6.6, 7.0, 7.3, 7.6, 8.0, 8.3, 8.7, 9.0, 9.4, 9.8], # y_labels
-    ]
-
-
     x_features = np.array(data1[0:-1])
     y_label = np.array(data1[-1])
 
-    model = LinearRegression()
-    start = datetime.datetime.now()
+    model = LogisticRegression()
     model.fit(x_features, y_label)
-    end = datetime.datetime.now()
-    #model.plot()
+    print(model.predict(x_features))
 
+
+    
+    
 if __name__ == "__main__":
     main()
-
-
-
-    
-
-
-
-    
