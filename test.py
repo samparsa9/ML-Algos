@@ -159,4 +159,4 @@ def main():
 if __name__ == "__main__":
     for i in range(100):
         main()
-        counter += 28
+        counter += 1

@@ -39,7 +39,7 @@ class KMeans():
         elif self.num_features == 3:
             ax1 = fig.add_subplot(111, projection='3d')
 
-        for m in range(3):
+        for m in range(10):
             tm.sleep(1)
             self.cluster_dict = {}
             for cluster in range(self.num_clusters):
