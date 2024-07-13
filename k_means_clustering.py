@@ -18,6 +18,7 @@ class KMeans():
         self.num_features = None
         # Variable representing if we are dealing with a dataframe
         self.df = False
+        self.num_iterations = 1
 
     # Function to apply the K-Means Clustering
     def fit(self, data_coords):
@@ -58,7 +59,7 @@ class KMeans():
 
         # The number of iterations that we will run K Means with randomly initializing centroids to see which gives
         # the lowest variance and eventually returning the cluster that result in the lowest variance
-        for m in range(20):
+        for m in range(self.num_iterations):
             # Refreshing our cluster dictionary at the start of every iteration
             self.cluster_dict = {}
             # For every cluster
@@ -218,7 +219,7 @@ class KMeans():
 
 
 def main():
-    X, y = make_blobs(n_samples=300, centers=4, n_features=2, random_state=counter)
+    X, y = make_blobs(n_samples=300, centers=4, n_features=3, random_state=counter)
     data = X
 
     model = KMeans(4)
