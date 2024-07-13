@@ -5,7 +5,7 @@ import time as tm
 from sklearn.datasets import make_blobs
 import pandas as pd
 
-counter = 0
+counter = 100
 class KMeans():
     def __init__(self, k):
         self.num_clusters = k
@@ -16,9 +16,15 @@ class KMeans():
         self.df = False
 
     def fit(self, data_coords):
+        #If it is a dataframe
         if isinstance(data_coords, pd.DataFrame):
             data_coords_df = data_coords.copy()
             data_coords = data_coords.values
+            data_coords_df["cluster"] = None
+            self.df = True
+        #if it it not a data frame, make it one
+        else:
+            data_coords_df = pd.DataFrame(data_coords)
             data_coords_df["cluster"] = None
             self.df = True
         self.data = data_coords
@@ -26,16 +32,14 @@ class KMeans():
         for cluster in range(self.num_clusters):
             # Cluster dictionary will have the key being the cluster # and the value being a list of a tuple of the coordiantes
             # of the cluster point, and a list of the data points in that cluster, initialized to an empty list for now
-            #self.cluster_dict[cluster][0] will give the (x,y) coordinate of the cluster centroid
-            # self.cluster_dict[cluster][1] will return a list of [x y] cordinates
             cluster_coordinates = []
             for i in range(0, self.num_features):
                 feature_column_mean = np.mean(self.data[:,i]) 
-                cluster_coordinates.append(feature_column_mean + 1) # +1 somehow fixes everything
+                random_noise = np.random.normal(0, 0.1)
+                cluster_coordinates.append(feature_column_mean+random_noise) # +1 somehow fixes everything
+                # cluster_coordinates.append(random.randint(np.min(self.data[:, 0]),np.max(self.data[:, 0])))
                 self.cluster_dict[cluster] = [np.array(cluster_coordinates), []]
-            # x_mean = np.mean(self.data[:, 0])
-            # y_mean = np.mean(self.data[:, 1])
-            # self.cluster_dict[cluster] = [np.array([x_mean+1, y_mean+1]), []]
+
         
         plt.ion()
         fig = plt.figure(figsize=(12,8))
@@ -45,7 +49,8 @@ class KMeans():
             ax1 = fig.add_subplot(211, projection='3d')
         # Assiging datapoints to clusters
         while np.sum(self.centroid_mean_diff_list) > 0.01 or self.centroid_mean_diff_list == []: #or any(self.cluster_dict[i][1] == [] for i in list(self.cluster_dict.keys())):
-            self.live_plotting(ax1)
+            if self.num_features <= 3:
+                self.live_plotting(ax1)
             # refreshing points in the clusters
             for i in list(self.cluster_dict.keys()):
                 self.cluster_dict[i][1] = []
@@ -72,14 +77,11 @@ class KMeans():
                     data_coords_df.at[j, "cluster"] = closest_cluster
 
             # Recalculate the mean of the cluster centroids
-            print(f"Redefining centroids based on mean of datapoints currently in cluster...")
             for i in list(self.cluster_dict.keys()):
                 old_centroid_mean = np.array(self.cluster_dict[i][0]) # This is a (x,y,z,...) point
-                print(f"Old Centroid Mean Point: {self.cluster_dict[i][0]}")
                 if len(self.cluster_dict[i][1]) > 0:
                     self.cluster_dict[i][0] = np.mean(self.cluster_dict[i][1], axis=0) # The new coordinate of our centroid based on the mean of the data points in it
                 new_centroid_mean = np.array(self.cluster_dict[i][0])# This is an (x,y,z...) point 
-                print(f"New Centroid Mean Point: {new_centroid_mean}")
                 try:
                     squared_dist = 0
                     for feature in range(0, self.num_features):
@@ -88,22 +90,11 @@ class KMeans():
                     mean_change = distance
                 except:
                      mean_change = 0
-                print(f"mean_change: {mean_change}")
                 self.centroid_mean_diff_list.append(mean_change)
-                #tm.sleep(1)
-            print("Finished updating means of centroids")
-            print(f"List of new differences of means: {self.centroid_mean_diff_list}")
-            print(f"sum: {np.sum(self.centroid_mean_diff_list)}")
             
-
         print("DONE")
-        # plt.ioff()
-        # plt.show()
-        if self.df:
-            return data_coords_df['cluster'].values
-        else:
-            return self.cluster_dict
-    
+        return data_coords_df['cluster'].values
+
     
     def live_plotting(self, ax1):
         ax1.cla()
@@ -138,40 +129,19 @@ class KMeans():
             plt.legend()
 
         plt.draw()
-        plt.pause(0.25)
+        plt.pause(0.01)
             
         
         
-
-
 def main():
-#     data = np.array([
-#     [5, 3, 4],     # Eeach row is a datapoint, each column is a feature, since this is unsurpervised learning both the x and y
-#     [1, 5, 6],     # coordinates will be features
-#     [2, 8, 8], 
-#     [3, 6, 2],
-#     [6, 2, 9], 
-#     [8, 1, 5], 
-#     [7, 3, 1], 
-#     [9, 4, 7],
-#     [7, 7, 4], 
-#     [6, 6, 8]
-# ])
     X, y = make_blobs(n_samples=300, centers=4, n_features=3, random_state=counter) # random_state  doesnt work
     data = X
 
-    df = pd.DataFrame(data)
-    # Plot the dataset
     model = KMeans(4)
-    print(model.fit(df))
-
-    # plt.figure(figsize=(12,8))
-    # plt.scatter(data[:, 0], data[:, 1], marker='o')
-    # plt.show()
-
+    print(model.fit(data))
 
 if __name__ == "__main__":
-    #for i in range(100):
+    for i in range(100):
         main()
         counter += 1
 
