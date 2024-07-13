@@ -1,0 +1,15 @@
+1. Linear Regression (Multi-Dimensional):           Done
+2. Logistic Regression (Multi-Dimensional):         Done
+3. K-Means Clustering (Multi-Dimensional):          Done
+4. K Nearest Neighbors                              Next Up
+5. Support Vector Machines
+6. Decisions Trees
+7. Random Forests
+8. Gradient Boosting Machines
+9. Principal Component Analysis (PCA)
+10. Naive Bayes
+11. Feedforward Neural Networks
+12. Convolutional Nueral Networks
+13. Recurrent Neural Networks
+14. Long Short-Term Memory
+15. Autoencoders
