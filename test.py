@@ -1,146 +1,162 @@
-import matplotlib.pyplot as plt
 import numpy as np
-from numpy import random
-import datetime
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_blobs
+import pandas as pd
 
-class LinearRegression:
-    def __init__(self, learning_rate=0.02): 
-        # Initializing class variables
-        self.learning_rate = learning_rate
-        # Initializing our parameters to start off as random numbers between 1 and 10
-        self.b = random.randint(10)
-        self.params = []
+counter = 100
 
-        self.model_refresh = 0.01
-        
-        self.features_matrix = None
-        self.y_labels = None
-        
-        self.y_preds = None
-        self.loss_values = []
+class KMeans():
+    def __init__(self, k):
+        self.num_clusters = k
+        self.cluster_dict = {}
+        self.centroid_mean_diff_list = []
+        self.data = None
+        self.num_features = None
+        self.df = False
 
-    # This function is essentially our model, which is just the equation for a line y = mx + b 
-    def f(self, features_matrix, params, b): 
-        return np.dot(features_matrix.T, params) + b  # y
-
-    # This is our cost function, which we have chosen to be Mean Squarred Error (Sum of Squarred Error leads to exploding gradients)
-    def loss_function(self, features_matrix, y_labels, params, b):
-        self.y_preds = self.f(features_matrix, params, b)  # y_hat is a list of our models predictions; produces our y values to plot our line of best fit
-        return np.mean((y_labels - self.y_preds) ** 2)  # Returning the MSE for these current parameters
-
-    def fit(self, features_matrix, y_labels):
-        # Storing the data passed in as class variables to be used later on
-        self.features_matrix = features_matrix  # [[features_1],[features_2], ... [y_labels]]
-        self.y_labels = y_labels
-        self.params = [random.randint(10) for _ in range(len(features_matrix))]
-        # This is our epsilon/small value to be used in calculating our partial derivatives
-        h = 1e-5
-        # Our model is currently not optimized
-        optimized = False
-
-        plt.ion()
-        fig = plt.figure(figsize=(12,8))
-        if len(self.params) == 2:
-            ax1 = fig.add_subplot(211, projection='3d')
+    def fit(self, data_coords):
+        # If it is a dataframe
+        if isinstance(data_coords, pd.DataFrame):
+            data_coords_df = data_coords.copy()
+            data_coords = data_coords.values
+            data_coords_df["cluster"] = None
+            self.df = True
+        # If it is not a dataframe, make it one
         else:
-            ax1 = fig.add_subplot(211)
-        ax2 = fig.add_subplot(212)
+            data_coords_df = pd.DataFrame(data_coords)
+            data_coords_df["cluster"] = None
+            self.df = True
 
-        # While its not optimized, run gradient descent
-        while not optimized:
-            partial_derivatives = []
-            for i in range(len(self.params)):  # self.params [w, b, z]
-                paramsplush = self.params[:i] + [self.params[i] + h] + self.params[i+1:]
-                paramsminush = self.params[:i] + [self.params[i] - h] + self.params[i+1:]
-                dparam = (self.loss_function(features_matrix, y_labels, paramsplush, self.b)
-                          - self.loss_function(features_matrix, y_labels, paramsminush, self.b)) / (2 * h)
-                partial_derivatives.append(dparam)
-                self.params[i] = self.params[i] - ((self.learning_rate * dparam))
-                print(f"Partial Derivative: {dparam}")
-            
-            db = (self.loss_function(features_matrix, y_labels, self.params, self.b + h) 
-                  - self.loss_function(features_matrix, y_labels, self.params, self.b - h)) / (2 * h)
-            self.b = self.b - ((self.learning_rate * db))
+        self.data = data_coords
+        self.num_features = self.data.shape[1]
+        variance_clusters_dict = {}
+        
+        for m in range(3):
+            self.cluster_dict = {}
+            for cluster in range(self.num_clusters):
+                cluster_coordinates = []
+                for i in range(self.num_features):
+                    feature_column_mean = np.mean(self.data[:, i])
+                    random_noise = np.random.normal(0, 0.1)
+                    cluster_coordinates.append(feature_column_mean + random_noise)
+                self.cluster_dict[cluster] = [np.array(cluster_coordinates), []]
 
-            self.y_preds = self.f(self.features_matrix, self.params, self.b)
-            current_loss = self.loss_function(features_matrix, y_labels, self.params, self.b)
-            self.loss_values.append(current_loss)
-            print(f"Current Loss: {current_loss}")
+            plt.ion()
+            fig = plt.figure(figsize=(12, 8))
+            if self.num_features == 2:
+                ax1 = fig.add_subplot(111)
+            elif self.num_features == 3:
+                ax1 = fig.add_subplot(111, projection='3d')
 
-            self.live_plotting(ax1, ax2)
+            while True:
+                if self.num_features <= 3:
+                    self.live_plotting(ax1)
+                
+                for i in list(self.cluster_dict.keys()):
+                    self.cluster_dict[i][1] = []
+                
+                self.centroid_mean_diff_list = []
 
-            # If both of these partial derivatives are less than 0.1, we have completed gradient descent
-            if all(abs(pd) < 0.01 for pd in partial_derivatives):
-                optimized = True
+                for j, data_coord in enumerate(data_coords):
+                    closest_cluster_distance = float('inf')
+                    closest_cluster = None
 
-        plt.ioff()
-        plt.show()
+                    for i in list(self.cluster_dict.keys()):
+                        cluster_coord = self.cluster_dict[i][0]
+                        distance = np.linalg.norm(cluster_coord - data_coord)
+                        if distance < closest_cluster_distance:
+                            closest_cluster_distance = distance
+                            closest_cluster = i
 
-    def predict(self, features_matrix):
-        self.y_preds = self.f(features_matrix, self.params, self.b)
-        return self.y_preds
+                    self.cluster_dict[closest_cluster][1].append(data_coord)
+                    if self.df:
+                        data_coords_df.at[j, "cluster"] = closest_cluster
 
-    def plot(self):
-        if len(self.params) == 1:
-            # Plot our actual x and y points
-            plt.plot(self.features_matrix[0], self.y_labels, 'o')
-            # Plot our models predictions using the x values
-            plt.plot(self.features_matrix[0], self.y_preds)
-            plt.show()
-        elif len(self.params) == 2:
-            fig = plt.figure()
-            ax = fig.add_subplot(111, projection='3d')
-            ax.scatter(self.features_matrix[0], self.features_matrix[1], self.y_labels, color='red', label='Actual')
-            ax.plot_trisurf(self.features_matrix[0], self.features_matrix[1], self.y_preds, color='blue', alpha=0.5, label='Predicted')
-            ax.set_xlabel('X Feature')
-            ax.set_ylabel('Z Feature')
-            ax.set_zlabel('Y Labels')
-            plt.show()
-        else:
-            print(f"Cannot display graph of {len(self.params) + 1} Dimensions")
+                converged = True
+                for i in list(self.cluster_dict.keys()):
+                    old_centroid_mean = np.array(self.cluster_dict[i][0])
+                    if len(self.cluster_dict[i][1]) > 0:
+                        self.cluster_dict[i][0] = np.mean(self.cluster_dict[i][1], axis=0)
+                    new_centroid_mean = np.array(self.cluster_dict[i][0])
+                    mean_change = np.linalg.norm(new_centroid_mean - old_centroid_mean)
+                    self.centroid_mean_diff_list.append(mean_change)
+                    if mean_change > 0.01:
+                        converged = False
 
-    def live_plotting(self, ax1, ax2):
-        if len(self.params) == 2:
-            ax1.cla()
-            ax1.scatter(self.features_matrix[0], self.features_matrix[1], self.y_labels, color='red', label='Actual')
-            ax1.plot_trisurf(self.features_matrix[0], self.features_matrix[1], self.y_preds, color='blue', alpha=0.5, label='Predicted')
+                if converged:
+                    break
+
+            variance_sum_for_cluster = np.sum(list(self.calculate_cluster_variance().values()))
+            variance_clusters_dict[m] = [variance_sum_for_cluster, data_coords_df['cluster'].values.copy()]
+        
+        print("DONE")
+        print(variance_clusters_dict)
+        
+        best_cluster_index = None
+        lowest_variance = float('inf')
+        for cluster_i in variance_clusters_dict.keys():
+            if variance_clusters_dict[cluster_i][0] < lowest_variance:
+                best_cluster_index = cluster_i
+                lowest_variance = variance_clusters_dict[cluster_i][0]
+
+        return variance_clusters_dict[best_cluster_index][1]
+
+    def calculate_cluster_variance(self):
+        variance_dict = {}
+        for cluster in range(self.num_clusters):
+            cluster_points = np.array(self.cluster_dict[cluster][1])
+            centroid = self.cluster_dict[cluster][0]
+            if len(cluster_points) > 0:
+                variance_dict[cluster] = np.mean(np.linalg.norm(cluster_points - centroid, axis=1) ** 2)
+            else:
+                variance_dict[cluster] = 0
+        return variance_dict
+
+    def live_plotting(self, ax1):
+        ax1.cla()
+        colors = plt.cm.get_cmap('viridis', self.num_clusters)
+
+        if self.num_features == 2:
+            for i in list(self.cluster_dict.keys()):
+                cluster_points = np.array(self.cluster_dict[i][1])
+                if len(cluster_points) > 0:
+                    ax1.scatter(cluster_points[:, 0], cluster_points[:, 1], color=colors(i), label=f'Cluster {i}')
+
+            cluster_x_coords = [self.cluster_dict[i][0][0] for i in list(self.cluster_dict.keys())]
+            cluster_y_coords = [self.cluster_dict[i][0][1] for i in list(self.cluster_dict.keys())]
+            ax1.scatter(cluster_x_coords, cluster_y_coords, color='red', marker='x', label='Centroids')
+
+            plt.axis([-15, 15, -15, 15])
+            plt.legend()
+        elif self.num_features == 3:
+            for i in list(self.cluster_dict.keys()):
+                cluster_points = np.array(self.cluster_dict[i][1])
+                if len(cluster_points) > 0:
+                    ax1.scatter(cluster_points[:, 0], cluster_points[:, 1], cluster_points[:, 2], color=colors(i), label=f'Cluster {i}')
+
+            cluster_x_coords = [self.cluster_dict[i][0][0] for i in list(self.cluster_dict.keys())]
+            cluster_y_coords = [self.cluster_dict[i][0][1] for i in list(self.cluster_dict.keys())]
+            cluster_z_coords = [self.cluster_dict[i][0][2] for i in list(self.cluster_dict.keys())]
+            ax1.scatter(cluster_x_coords, cluster_y_coords, cluster_z_coords, color='red', marker='x', label='Centroids')
+
             ax1.set_xlabel('X')
-            ax1.set_ylabel('Z')
-            ax1.set_zlabel('Y')
-        else:
-            ax1.cla()
-            ax1.plot(self.features_matrix[0], self.y_labels, 'o')
-            ax1.plot(self.features_matrix[0], self.y_preds)
-
-        ax2.cla()
-        ax2.plot(self.loss_values, label='Loss')
-        ax2.set_xlabel('Iteration')
-        ax2.set_ylabel('Loss')
-        ax2.legend()
+            ax1.set_ylabel('Y')
+            ax1.set_zlabel('Z')
+            plt.legend()
 
         plt.draw()
-        plt.pause(self.model_refresh)
+        plt.pause(0.01)
 
 
 def main():
-    data1 = [
-        [0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2],
-        [1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0],
-    ]
-    data2 = [
-        [0.8, 1.5, 2.3, 3.4, 4.4, 5.2, 5.4, 5.7, 6.2, 6.5, 6.8, 7.0, 7.3, 7.6, 8.0, 8.4, 8.8, 9.0, 9.3, 9.7],  # x_features
-        [1.2, 1.0, 2.0, 4.0, 3.5, 6.0, 4.7, 4.4, 7.0, 7.4, 7.8, 8.0, 8.3, 8.6, 9.0, 9.4, 9.8, 10.0, 10.3, 10.7],  # z_features
-        [1.2, 1.5, 2.5, 3.1, 3.3, 3.8, 4.8, 5.5, 6.0, 6.3, 6.6, 7.0, 7.3, 7.6, 8.0, 8.3, 8.7, 9.0, 9.4, 9.8],  # y_labels
-    ]
+    X, y = make_blobs(n_samples=300, centers=4, n_features=3, random_state=counter)
+    data = X
 
-    x_features = np.array(data2[0:-1])
-    y_label = np.array(data2[-1])
+    model = KMeans(4)
+    print(model.fit(data))
 
-    model = LinearRegression()
-    start = datetime.datetime.now()
-    model.fit(x_features, y_label)
-    end = datetime.datetime.now()
-    # model.plot()
 
 if __name__ == "__main__":
-    main()
+    for i in range(100):
+        main()
+        counter += 28
