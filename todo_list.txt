@@ -2,8 +2,8 @@ Machine Learning Algorithms
 1. Linear Regression (Multi-Dimensional):                       Done
 2. Logistic Regression (Multi-Dimensional):                     Done
 3. K-Means Clustering (Multi-Dimensional):                      Done (Implemented in Sheryl)
-4. K Nearest Neighbors                                          Next Up
-5. Support Vector Machines
+4. K Nearest Neighbors                                          Done
+5. Support Vector Machines                                      Next Up
 6. Decisions Trees
 7. Random Forests
 8. Gradient Boosting Machines
